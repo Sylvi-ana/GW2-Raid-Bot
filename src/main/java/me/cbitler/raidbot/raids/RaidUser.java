@@ -10,12 +10,14 @@ public class RaidUser {
     String name;
     String spec;
     String role;
+    String discriminator;
 
-    public RaidUser(String id, String name, String spec, String role) {
+    public RaidUser(String id, String name, String spec, String role, String discriminator) {
         this.id = id;
         this.name = name;
         this.spec = spec;
         this.role = role;
+        this.discriminator = discriminator;
     }
 
     public String getId() {
@@ -49,4 +51,14 @@ public class RaidUser {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public String getDiscriminator() {
+        return discriminator;
+    }
+
+    public void setDiscriminator(String discriminator) {
+        this.discriminator = discriminator;
+    }
+    
+    
 }

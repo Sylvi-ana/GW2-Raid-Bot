@@ -33,26 +33,27 @@ public class Reactions {
     };
 
     static Emote[] reactions = {
-            getEmoji("387295988282556417"), // Dragonhunter
-            getEmoji("387296167958151169"), // Firebrand
-            getEmoji("387296053659172869"), // Herald
-            getEmoji("387296192381321226"), // Renegade
-            getEmoji("387296013947502592"), // Berserker
-            getEmoji("387296212421836800"), // Spellbreaker
-            getEmoji("387296081823662081"), // Scrapper
-            getEmoji("387296176770121738"), // Holosmith
-            getEmoji("387296044716916738"), // Druid
-            getEmoji("387296205488521216"), // Soulbeast
-            getEmoji("387296029533274113"), // Daredevil
-            getEmoji("387296159716081664"), // Deadeye
-            getEmoji("387296219988361218"), // Weaver
-            getEmoji("387296089340117002"), // Tempest
-            getEmoji("387296021710897152"), // Chronomancer
-            getEmoji("387296184114610185"), // Mirage
-            getEmoji("387296061997318146"), // Reaper
-            getEmoji("387296198928891905"), // Scourge
-            getEmoji("387346852867211274") // X_
+            getEmoji("595643923054067732"), // Dragonhunter
+            getEmoji("595643923200868379"), // Firebrand
+            getEmoji("595643923226165248"), // Herald
+            getEmoji("595643923104530445"), // Renegade
+            getEmoji("595643923213451274"), // Berserker
+            getEmoji("595643923347669006"), // Spellbreaker
+            getEmoji("595643923347537948"), // Scrapper
+            getEmoji("595643922748014623"), // Holosmith
+            getEmoji("595643922982895616"), // Druid
+            getEmoji("595643923226165269"), // Soulbeast
+            getEmoji("595643922617991191"), // Daredevil
+            getEmoji("595643923280691210"), // Deadeye
+            getEmoji("595643923276496896"), // Weaver
+            getEmoji("595643923339411456"), // Tempest
+            getEmoji("595643923146211350"), // Chronomancer
+            getEmoji("595643923230359562"), // Mirage
+            getEmoji("595643923221839872"), // Reaper
+            getEmoji("595643923331022858"), // Scourge
+            getEmoji("595643923158925333") // X_
     };
+    
 
     /**
      * Get an emoji from it's emote ID via JDA
@@ -62,6 +63,7 @@ public class Reactions {
     private static Emote getEmoji(String id) {
         return RaidBot.getInstance().getJda().getEmoteById(id);
     }
+    
 
     /**
      * Get the list of reaction names as a list

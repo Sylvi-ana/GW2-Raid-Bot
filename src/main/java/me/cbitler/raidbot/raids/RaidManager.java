@@ -28,7 +28,6 @@ public class RaidManager {
      */
     public static void createRaid(PendingRaid raid) {
         MessageEmbed message = buildEmbed(raid);
-
         Guild guild = RaidBot.getInstance().getServer(raid.getServerId());
         List<TextChannel> channels = guild.getTextChannelsByName(raid.getAnnouncementChannel(), true);
         if(channels.size() > 0) {
@@ -40,7 +39,7 @@ public class RaidManager {
                         Raid newRaid = new Raid(message1.getId(), message1.getGuild().getId(), message1.getChannel().getId(), raid.getLeaderName(), raid.getName(), raid.getDescription(), raid.getDate(), raid.getTime());
                         newRaid.roles.addAll(raid.rolesWithNumbers);
                         raids.add(newRaid);
-
+                        
                         for (Emote emote : Reactions.getEmotes()) {
                             message1.addReaction(emote).queue();
                         }
@@ -145,10 +144,11 @@ public class RaidManager {
                 String spec = userResults.getResults().getString("spec");
                 String role = userResults.getResults().getString("role");
                 String raidId = userResults.getResults().getString("raidId");
+                String discriminator = userResults.getResults().getString("discriminator");
 
                 Raid raid = RaidManager.getRaid(raidId);
                 if(raid != null) {
-                    raid.addUser(id, name, spec, role, false, false);
+                    raid.addUser(id, name, spec, role, false, false, discriminator);
                 }
             }
 
@@ -160,16 +160,34 @@ public class RaidManager {
                 String spec = userFlexRolesResults.getResults().getString("spec");
                 String role = userFlexRolesResults.getResults().getString("role");
                 String raidId = userFlexRolesResults.getResults().getString("raidId");
+                String discriminator = userFlexRolesResults.getResults().getString("discriminator");
 
                 Raid raid = RaidManager.getRaid(raidId);
                 if(raid != null) {
-                    raid.addUserFlexRole(id, name, spec, role, false, false);
+                    raid.addUserFlexRole(id, name, spec, role, false, false, discriminator);
+                }
+            }
+            
+            QueryResult userBackupRolesResults = db.query("SELECT * FROM `raidUsersBackupRoles`", new String[] {});
+
+            while(userResults.getResults().next()) {
+                String id = userBackupRolesResults.getResults().getString("userId");
+                String name = userBackupRolesResults.getResults().getString("username");
+                String spec = userBackupRolesResults.getResults().getString("spec");
+                String role = userBackupRolesResults.getResults().getString("role");
+                String raidId = userBackupRolesResults.getResults().getString("raidId");
+                String raidDiscriminator = userBackupRolesResults.getResults().getString("discriminator");
+
+                Raid raid = RaidManager.getRaid(raidId);
+                if(raid != null) {
+                    raid.addUserBackupRole(id, name, spec, role, false, false, raidDiscriminator);
                 }
             }
 
             for(Raid raid : raids) {
                 raid.updateMessage();
             }
+            
         } catch (SQLException e) {
             System.out.println("Couldn't load raids.. exiting");
             e.printStackTrace();
@@ -276,6 +294,8 @@ public class RaidManager {
         builder.addField("Roles: ", buildRolesText(raid), true);
         builder.addField("Flex Roles: ", buildFlexRolesText(raid), true);
         builder.addBlankField(false);
+        builder.addField("Backup Roles: ", buildBackupRolesText(raid), true);
+        builder.addBlankField(false);
         return builder.build();
     }
 
@@ -299,5 +319,13 @@ public class RaidManager {
      */
     private static String buildFlexRolesText(PendingRaid raid) {
         return "";
+    }
+    
+    private static String buildBackupRolesText(PendingRaid raid) {
+        String text = "";
+        for(RaidRole role : raid.getRolesWithNumbers()) {
+            text += ("**" + role.name + " (" + role.amount + "):** \n");
+        }
+        return text;
     }
 }

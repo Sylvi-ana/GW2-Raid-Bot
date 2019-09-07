@@ -23,7 +23,7 @@ public class Main {
             System.out.println("Specify Discord Bot Token in file 'token'");
             System.exit(1);
         }
-
+        
         JDA jda = new JDABuilder(AccountType.BOT).setToken(token).buildBlocking();
         RaidBot bot = new RaidBot(jda);
     }

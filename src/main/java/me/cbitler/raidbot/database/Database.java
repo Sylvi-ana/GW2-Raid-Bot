@@ -29,6 +29,7 @@ public class Database {
             + " username text, \n"
             + " spec text, \n"
             + " role text, \n"
+            + " discriminator text, \n"
             + " raidId text)";
 
     String raidUsersFlexRolesTableInit = "CREATE TABLE IF NOT EXISTS raidUsersFlexRoles (\n"
@@ -36,6 +37,15 @@ public class Database {
             + " username text, \n"
             + " spec text, \n"
             + " role text, \n"
+            + " discriminator text, \n"
+            + " raidId text)";
+    
+    String raidUserBackupRolesTableInit = "CREATE TABLE IF NOT EXISTS raidUsersBackupRoles (\n"
+            + " userId text, \n"
+            + " username text, \n"
+            + " spec text, \n"
+            + " role text, \n"
+            + " discriminator text, \n"
             + " raidId text)";
 
     String botServerSettingsInit = "CREATE TABLE IF NOT EXISTS serverSettings (\n"
@@ -116,6 +126,7 @@ public class Database {
     public void tableInits() throws SQLException {
         connection.createStatement().execute(raidTableInit);
         connection.createStatement().execute(raidUsersTableInit);
+        connection.createStatement().execute(raidUserBackupRolesTableInit);
         connection.createStatement().execute(raidUsersFlexRolesTableInit);
         connection.createStatement().execute(botServerSettingsInit);
 
