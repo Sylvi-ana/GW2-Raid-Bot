@@ -462,8 +462,17 @@ public class Raid {
         builder.addField("Backup Roles:", buildBackupRolesText(), true);
         builder.addBlankField(false);
         builder.addField("Flex Roles:", buildFlexRolesText(), true);
+        builder.addField("Participants: ", buildAllNames(), true);
         builder.addField("ID: ", messageId, false);
         return builder.build();
+    }
+
+    private String buildAllNames(){
+        String text = "";
+        for(RaidUser user : this.userToRole.keySet()){
+            text = "@" + user.name + "#" + user.discriminator + " ";
+        }
+        return text;
     }
     
     private String buildBackupRolesText() {

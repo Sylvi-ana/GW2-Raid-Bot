@@ -7,6 +7,7 @@ import me.cbitler.raidbot.logs.LogParser;
 import me.cbitler.raidbot.raids.PendingRaid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.selection.SelectionStep;
+import me.cbitler.raidbot.utility.Values;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
@@ -104,8 +105,7 @@ public class DMHandler extends ListenerAdapter {
             if(nextStep != null) {
                 if(nextStep instanceof RunChannelStep){
                     String serverId = bot.getPendingRaids().get(author.getId()).getServerId();
-                    if(bot.getRaidBotChannel(serverId).equals("null")){
-                        System.out.println("testing");
+                    if(bot.getRaidBotChannel(serverId).equals(Values.DEFAULTRAIDCHANNEL)){
                         bot.getCreationMap().put(author.getId(), nextStep);
                         e.getChannel().sendMessage(nextStep.getStepText()).queue();
                     } else {
