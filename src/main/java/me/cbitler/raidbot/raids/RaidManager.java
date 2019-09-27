@@ -5,9 +5,11 @@ import me.cbitler.raidbot.database.Database;
 import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.utility.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Emote;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.MessageEmbed;
+import net.dv8tion.jda.core.entities.TextChannel;
 
-import javax.imageio.stream.IIOByteBuffer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,8 +30,16 @@ public class RaidManager {
      */
     public static void createRaid(PendingRaid raid) {
         MessageEmbed message = buildEmbed(raid);
-        Guild guild = RaidBot.getInstance().getServer(raid.getServerId());
-        List<TextChannel> channels = guild.getTextChannelsByName(raid.getAnnouncementChannel(), true);
+        RaidBot bot = RaidBot.getInstance();
+        Guild guild = bot.getServer(raid.getServerId());
+        List<TextChannel> channels;
+
+        if (bot.getRaidBotChannel(raid.getServerId()).equals("null")){
+            channels = guild.getTextChannelsByName(raid.getAnnouncementChannel(), true);
+        } else {
+            channels = guild.getTextChannelsByName(bot.getRaidBotChannel(raid.getServerId()), true);
+        }
+
         if(channels.size() > 0) {
             // We always go with the first channel if there is more than one
             try {

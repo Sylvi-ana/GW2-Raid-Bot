@@ -15,7 +15,7 @@ public class EnvVariables {
      * @throws IOException
      */
     public void loadFromEnvFile() throws IOException {
-        File file = new File(".env");
+        File file = new File("token.env");
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         while((line = reader.readLine()) != null) {

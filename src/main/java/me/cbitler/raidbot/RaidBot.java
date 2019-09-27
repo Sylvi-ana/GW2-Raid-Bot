@@ -1,6 +1,9 @@
 package me.cbitler.raidbot;
 
-import me.cbitler.raidbot.commands.*;
+import me.cbitler.raidbot.commands.CommandRegistry;
+import me.cbitler.raidbot.commands.EndRaidCommand;
+import me.cbitler.raidbot.commands.HelpCommand;
+import me.cbitler.raidbot.commands.InfoCommand;
 import me.cbitler.raidbot.creation.CreationStep;
 import me.cbitler.raidbot.database.Database;
 import me.cbitler.raidbot.database.QueryResult;
@@ -8,14 +11,13 @@ import me.cbitler.raidbot.handlers.ChannelMessageHandler;
 import me.cbitler.raidbot.handlers.DMHandler;
 import me.cbitler.raidbot.handlers.ReactionHandler;
 import me.cbitler.raidbot.raids.PendingRaid;
-import me.cbitler.raidbot.raids.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.selection.SelectionStep;
-import me.cbitler.raidbot.utility.GuildCountUtil;
+import me.cbitler.raidbot.utility.Values;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 
@@ -37,6 +39,7 @@ public class RaidBot {
 
     //TODO: This should be moved to it's own settings thing
     HashMap<String, String> raidLeaderRoleCache = new HashMap<>();
+    HashMap<String, String> raidBotChannelCache = new HashMap<>();
 
     Database db;
 
@@ -57,20 +60,6 @@ public class RaidBot {
         CommandRegistry.addCommand("info", new InfoCommand());
         CommandRegistry.addCommand("endRaid", new EndRaidCommand());
 
-        new Thread(() -> {
-            while (true) {
-                try {
-                    GuildCountUtil.sendGuilds(jda);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(1000*60*5);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
     }
 
     /**
@@ -136,13 +125,13 @@ public class RaidBot {
                 QueryResult results = db.query("SELECT `raid_leader_role` FROM `serverSettings` WHERE `serverId` = ?",
                         new String[]{serverId});
                 if (results.getResults().next()) {
-                    raidLeaderRoleCache.put(serverId, results.getResults().getString("raid_leader_role"));
+                    raidLeaderRoleCache.put(serverId, results.getResults().getString(Values.DEFAULTRAIDLEADER));
                     return raidLeaderRoleCache.get(serverId);
                 } else {
-                    return "Raid Leader";
+                    return Values.DEFAULTRAIDLEADER;
                 }
             } catch (Exception e) {
-                return "Raid Leader";
+                return Values.DEFAULTRAIDLEADER;
             }
         }
     }
@@ -155,8 +144,8 @@ public class RaidBot {
     public void setRaidLeaderRole(String serverId, String role) {
         raidLeaderRoleCache.put(serverId, role);
         try {
-            db.update("INSERT INTO `serverSettings` (`serverId`,`raid_leader_role`) VALUES (?,?)",
-                    new String[] { serverId, role});
+            db.update("INSERT INTO `serverSettings` (`serverId`,`raid_leader_role`, `raid_bot_channel`) VALUES (?,?,?)",
+                    new String[] { serverId, role, Values.DEFAULTRAIDCHANNEL});
         } catch (SQLException e) {
             //TODO: There is probably a much better way of doing this
             try {
@@ -166,6 +155,67 @@ public class RaidBot {
                 // Not much we can do if there is also an insert error
             }
         }
+    }
+
+    /**
+     * Get the raid leader role for a specific server.
+     * This works by caching the role once it's retrieved once, and returning the default if a server hasn't set one.
+     * @param serverId the ID of the server
+     * @return The name of the role that is considered the raid leader for that server
+     */
+    public String getRaidBotChannel(String serverId) {
+        if (raidBotChannelCache.get(serverId) != null) {
+            return raidBotChannelCache.get(serverId);
+        } else {
+            try {
+                QueryResult results = db.query("SELECT `raid_bot_channel` FROM `serverSettings` WHERE `serverId` = ?",
+                        new String[]{serverId});
+                if (results.getResults().next()) {
+                    raidBotChannelCache.put(serverId, results.getResults().getString(Values.DEFAULTRAIDCHANNEL));
+                    return raidBotChannelCache.get(serverId);
+                } else {
+                    return Values.DEFAULTRAIDCHANNEL;
+                }
+            } catch (Exception e) {
+                return Values.DEFAULTRAIDCHANNEL;
+            }
+        }
+    }
+
+    /**
+     * Set the raid channel for a server. If the channel is 'null' a channel has to be chosen. This also updates it in SQLite
+     * @param serverId The server ID
+     * @param channel The channel name
+     */
+    public void setRaidBotChannel(String serverId, String channel) {
+        String channelWithoutHash = channel.replace("#","");
+        boolean validChannel = false;
+        RaidBot bot = RaidBot.getInstance();
+        for (TextChannel c : bot.getServer(serverId).getTextChannels()) {
+            if(c.getName().replace("#","").equalsIgnoreCase(channelWithoutHash)) {
+                validChannel = true;
+            }
+        }
+
+        if(!validChannel) {
+            throw new IllegalArgumentException("Please enter an existing channel or check the permissions of the bot");
+        } else {
+            raidBotChannelCache.put(serverId, channel);
+            try {
+                db.update("INSERT INTO `serverSettings` (`serverId`, `raid_leader_role`, `raid_bot_channel`) VALUES (?,?,?)",
+                        new String[] { serverId, Values.DEFAULTRAIDLEADER, channel});
+            } catch (SQLException e) {
+                //TODO: There is probably a much better way of doing this
+                try {
+                    db.update("UPDATE `serverSettings` SET `raid_bot_channel` = ? WHERE `serverId` = ?",
+                            new String[] { channel, serverId });
+                } catch (SQLException e1) {
+                    // Not much we can do if there is also an insert error
+                }
+            }
+        }
+
+
     }
 
     /**

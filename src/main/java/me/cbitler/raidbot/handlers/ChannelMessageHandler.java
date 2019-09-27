@@ -5,15 +5,11 @@ import me.cbitler.raidbot.commands.Command;
 import me.cbitler.raidbot.commands.CommandRegistry;
 import me.cbitler.raidbot.creation.CreationStep;
 import me.cbitler.raidbot.creation.RunNameStep;
-import me.cbitler.raidbot.logs.LogParser;
 import me.cbitler.raidbot.raids.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.utility.PermissionsUtil;
+import me.cbitler.raidbot.utility.Values;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -37,10 +33,10 @@ public class ChannelMessageHandler extends ListenerAdapter {
            return;
         }
 
-        if(e.getMessage().getRawContent().startsWith("!")) {
+        if(e.getMessage().getRawContent().startsWith(Values.DEFAULTCOMMANDSYMBOL)) {
             String[] messageParts = e.getMessage().getRawContent().split(" ");
             String[] arguments = CommandRegistry.getArguments(messageParts);
-            Command command = CommandRegistry.getCommand(messageParts[0].replace("!",""));
+            Command command = CommandRegistry.getCommand(messageParts[0].replace(Values.DEFAULTCOMMANDSYMBOL,""));
             if(command != null) {
                 command.handleCommand(messageParts[0], arguments, e.getChannel(), e.getAuthor());
 
@@ -88,6 +84,7 @@ public class ChannelMessageHandler extends ListenerAdapter {
             }
         }
 
+        //TODO: clean up this shit
         if (e.getMember().getPermissions().contains(Permission.MANAGE_SERVER)) {
             if(e.getMessage().getRawContent().toLowerCase().startsWith("!setraidleaderrole")) {
                 try {
@@ -100,6 +97,21 @@ public class ChannelMessageHandler extends ListenerAdapter {
                     e.getMember().getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Make sure that the bot has the 'Manage messages' permission").queue());
                 }
             }
+
+            if(e.getMessage().getRawContent().toLowerCase().startsWith("!setraidchannel")) {
+                try {
+                    String[] commandParts = e.getMessage().getRawContent().split(" ");
+                    String raidChannel = combineArguments(commandParts, 1);
+                    RaidBot.getInstance().setRaidBotChannel(e.getMember().getGuild().getId(), raidChannel);
+                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Raid channel updated to: " + raidChannel).queue());
+                    e.getMessage().delete().queue();
+                } catch (IllegalArgumentException exc) {
+                    e.getMember().getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(exc.getMessage()).queue());
+                } catch (Exception exc) {
+                    e.getMember().getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Make sure that the bot has the 'Manage messages' permission").queue());
+                }
+            }
+
         }
     }
 

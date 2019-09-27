@@ -1,7 +1,6 @@
 package me.cbitler.raidbot.database;
 
 import java.sql.*;
-import java.util.List;
 
 /**
  * Class for managing the SQLite database for this bot
@@ -50,7 +49,8 @@ public class Database {
 
     String botServerSettingsInit = "CREATE TABLE IF NOT EXISTS serverSettings (\n"
             + " serverId text PRIMARY KEY, \n"
-            + " raid_leader_role text)";
+            + " raid_leader_role text, \n"
+            + " raid_bot_channel text)";
 
     /**
      * Create a new database with the specific filename
