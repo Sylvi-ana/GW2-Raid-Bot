@@ -470,7 +470,7 @@ public class Raid {
     private String buildAllNames(){
         String text = "";
         for(RaidUser user : this.userToRole.keySet()){
-            text = "@" + user.name + "#" + user.discriminator + " ";
+            text += "@" + user.name + "#" + user.discriminator + " ";
         }
         return text;
     }
