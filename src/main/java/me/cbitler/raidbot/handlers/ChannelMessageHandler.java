@@ -69,6 +69,9 @@ public class ChannelMessageHandler extends ListenerAdapter {
                     Raid raid = RaidManager.getRaid(messageId);
 
                     if (raid != null && raid.getServerId().equalsIgnoreCase(e.getGuild().getId())) {
+                        if (name.contains("#")){
+                            name = name.split("#")[0];
+                        }
                         if(raid.getUserByName(name) != null) {
                             raid.removeUserByName(name);
                         }
