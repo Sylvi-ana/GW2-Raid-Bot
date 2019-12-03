@@ -35,15 +35,24 @@ public class RunRoleSetupStep implements CreationStep {
                 e.getChannel().sendMessage("You need to specify the role in the format [amount]:[Role name]").queue();
             } else {
                 try {
-                    int amnt = Integer.parseInt(parts[0]);
-                    String roleName = parts[1].trim();
-                    raid.getRolesWithNumbers().add(new RaidRole(amnt, roleName));
-                    e.getChannel().sendMessage("Role added").queue();
+                    addRoles(e.getMessage().getRawContent(), raid);
+                    e.getChannel().sendMessage("Role(s) added").queue();
                 } catch (Exception ex) {
-                    e.getChannel().sendMessage("Invalid input: Make sure it's in the format of [number]:[role], like 1:DPS").queue();
+                    e.getChannel().sendMessage("Invalid input: Make sure it's in the format of [number]:[role]/[number]:[role], like 1:DPS/1:Tank"
+                            + "Be careful, every role before the mistake is added to the raid!").queue();
                 }
             }
             return false;
+        }
+    }
+    
+    public void addRoles(String s, PendingRaid raid){
+        String[] roles = s.split("/");
+        for (String role : roles){
+            String[] parts = role.split(":");
+            int amnt = Integer.parseInt(parts[0]);
+            String roleName = parts[1].trim();
+            raid.getRolesWithNumbers().add(new RaidRole(amnt, roleName));
         }
     }
 
@@ -51,7 +60,8 @@ public class RunRoleSetupStep implements CreationStep {
      * {@inheritDoc}
      */
     public String getStepText() {
-        return "Enter the roles for raid run (format: [amount]:[Role name]). Type done to finish entering roles:";
+        return "Enter the roles for raid run (format: [amount]:[Role name]). Type done to finish entering roles."
+                + "To enter multiple at once, make sure to use / between the roles for ex: 1:Chrono/1:Druid";
     }
 
     /**
