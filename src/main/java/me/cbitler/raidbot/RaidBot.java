@@ -1,5 +1,6 @@
 package me.cbitler.raidbot;
 
+import java.sql.ResultSet;
 import me.cbitler.raidbot.commands.CommandRegistry;
 import me.cbitler.raidbot.commands.EndRaidCommand;
 import me.cbitler.raidbot.commands.HelpCommand;
@@ -20,6 +21,8 @@ import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class representing the raid bot itself.
@@ -55,11 +58,31 @@ public class RaidBot {
         db = new Database("raid.db");
         db.connect();
         RaidManager.loadRaids();
+        this.loadCaches();
 
         CommandRegistry.addCommand("help", new HelpCommand());
         CommandRegistry.addCommand("info", new InfoCommand());
         CommandRegistry.addCommand("endRaid", new EndRaidCommand());
 
+    }
+    
+    private void loadCaches(){
+        QueryResult caches;
+        try {
+            caches = db.query("SELECT * FROM `serverSettings`", new String[] {});
+            
+            while(caches.getResults().next()) {
+                String serverId = caches.getResults().getString("serverId");
+                String leader = caches.getResults().getString("raid_leader_role");
+                String channel = caches.getResults().getString("raid_bot_channel");
+                raidLeaderRoleCache.put(serverId, leader);
+                raidBotChannelCache.put(serverId, channel);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(RaidBot.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+            
     }
 
     /**
@@ -213,7 +236,7 @@ public class RaidBot {
                     // Not much we can do if there is also an insert error
                 }
             }
-        }
+                }
 
 
     }
